@@ -17,9 +17,6 @@ contract CrowdfundingCampaignV2_UUPS is Initializable, UUPSUpgradeable, OwnableU
 
     // Initialization function for V1 remains unchanged
     function initialize(uint256 _fundingGoal) public initializer {
-        __Ownable_init();
-        __UUPSUpgradeable_init();
-        
         fundingGoal = _fundingGoal;
     }
 
@@ -55,6 +52,14 @@ contract CrowdfundingCampaignV2_UUPS is Initializable, UUPSUpgradeable, OwnableU
 
         (bool success, ) = payable(owner()).call{value: amount}("");
         require(success, "Transfer failed.");
+    }
+
+    function getTotalFundsRaised() public view returns (uint256) {
+        return totalFundsRaised;
+    }
+
+    function getFundingGoal() public view returns (uint256) {
+        return fundingGoal;
     }
 
     function extendDeadline(uint256 _newDuration) public onlyOwner {

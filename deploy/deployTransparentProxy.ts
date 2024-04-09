@@ -18,7 +18,4 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     );
 
     await crowdfunding.waitForDeployment();
-
-    console.log(`🚀 Crowdfunding contract deployed at: ${await crowdfunding.getAddress()}`);
-    console.log('✅ Deployment complete!');
 }

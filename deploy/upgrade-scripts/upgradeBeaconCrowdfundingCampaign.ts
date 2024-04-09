@@ -7,7 +7,7 @@ import { Contract } from 'ethers';
 export default async function (hre: HardhatRuntimeEnvironment) {
     const wallet = getWallet();
     const deployer = new Deployer(hre, wallet);
-    const beaconAddress = '0x327b78565aE24328FB09a557c4062A242591DAB1';
+    const beaconAddress = 'beacon address here';
     
     const crowdfundingCampaignV2 = await deployer.loadArtifact('CrowdfundingCampaignV2');
     await hre.zkUpgrades.upgradeBeacon(deployer.zkWallet, beaconAddress, crowdfundingCampaignV2);
@@ -19,7 +19,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
         deployer.zkWallet,
         deployer.deploymentType,
     );
-    const beaconProxyAddress = "0x38392b26873CfF4cFc83a6c9fffa7f4d110223a5";
+    const beaconProxyAddress = "beacon proxy address here";
     const upgradedCrowdfundingCampaign  = attachTo.attach(beaconProxyAddress);
 
     upgradedCrowdfundingCampaign.connect(deployer.zkWallet);

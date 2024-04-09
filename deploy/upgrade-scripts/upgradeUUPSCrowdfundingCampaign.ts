@@ -6,22 +6,22 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     const wallet = getWallet();
     const deployer = new Deployer(hre, wallet);
     
-    const crowdfundingCampaignAddress = '0x91ae3fcECe94F039B71EFB4EfcFc6B3faf145E1f';
+    const crowdfundingCampaignAddressProxyAddress = 'Proxy address here';
     
-    const crowdfundingCampaignV2 = await deployer.loadArtifact('CrowdfundingCampaignV2');
-    const upgradedCrowdfundingCampaign = await hre.zkUpgrades.upgradeProxy(deployer.zkWallet, crowdfundingCampaignAddress, crowdfundingCampaignV2);
+    const crowdfundingCampaignV2_UUPS = await deployer.loadArtifact('CrowdfundingCampaignV2_UUPS');
+    const upgradedCrowdfundingCampaign = await hre.zkUpgrades.upgradeProxy(deployer.zkWallet, crowdfundingCampaignAddressProxyAddress, crowdfundingCampaignV2_UUPS);
     console.log('Successfully upgraded crowdfundingCampaign to crowdfundingCampaignV2');
 
     upgradedCrowdfundingCampaign.connect(deployer.zkWallet);
     // wait some time before the next call
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
-    // const durationInSeconds = 30 * 24 * 60 * 60; // For example, setting a 30-day duration
+    const durationInSeconds = 30 * 24 * 60 * 60; // For example, setting a 30-day duration
 
-    // const initTx = await upgradedCrowdfundingCampaign.initializeV2(durationInSeconds);
-    // const receipt = await initTx.wait();
+    const initTx = await upgradedCrowdfundingCampaign.initializeV2(durationInSeconds);
+    const receipt = await initTx.wait();
 
-    // console.log('CrowdfundingCampaignV2 initialized!', receipt.hash);
+    console.log('CrowdfundingCampaignV2 initialized!', receipt.hash);
 
     const fundraisingGoal = await upgradedCrowdfundingCampaign.getFundingGoal();
     console.log('Fundraising goal:', fundraisingGoal.toString());

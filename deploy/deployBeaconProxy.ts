@@ -19,7 +19,4 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     const crowdfunding = await hre.zkUpgrades.deployBeaconProxy(deployer.zkWallet, 
         await beacon.getAddress(), contractArtifact, [fundingGoalInWei]);
     await crowdfunding.waitForDeployment();
-
-    console.log(`🚀 Crowdfunding contract deployed at: ${await crowdfunding.getAddress()}`);
-    console.log('✅ Deployment complete!');
 }
