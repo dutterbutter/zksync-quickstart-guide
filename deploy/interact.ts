@@ -5,59 +5,69 @@ import { utils } from "zksync-ethers";
 
 // Address of the contract to interact with
 const CONTRACT_ADDRESS = "0xf811EA0B13DB10cBDDb32BB311000C69DbFE2Cb1";
-if (!CONTRACT_ADDRESS)
-  throw "⛔️ Provide address of the contract to interact with!";
+const PAYMASTER_ADDRESS = "0xB78284304181Ab44d5F73C6CC4881868044F7CC5";
+if (!CONTRACT_ADDRESS || !PAYMASTER_ADDRESS)
+    throw new Error("Contract and Paymaster addresses are required.");
 
-// An example of a script to interact with the contract
 export default async function() {
-  console.log(`Running script to interact with contract ${CONTRACT_ADDRESS}`);
-  const paymasterAddress = "0xB78284304181Ab44d5F73C6CC4881868044F7CC5";
-
-  
-  const provider = getProvider();
-  let paymasterBalance = await provider.getBalance(paymasterAddress);
-  console.log(`Paymaster ETH balance is now ${paymasterBalance.toString()}`);
+  console.log(`Running script to interact with contract ${CONTRACT_ADDRESS} using paymaster ${PAYMASTER_ADDRESS}`);
 
   // Load compiled contract info
-  const contractArtifact = await hre.artifacts.readArtifact("CrowdfundingCampaignV2");
+  const contractArtifact = await hre.artifacts.readArtifact(
+    "CrowdfundingCampaignV2"
+  );
 
   // Initialize contract instance for interaction
   const contract = new ethers.Contract(
     CONTRACT_ADDRESS,
     contractArtifact.abi,
-    getWallet() // Interact with the contract on behalf of this wallet
+    getWallet()
   );
 
-  // Run contract read function
   const response = await contract.getTotalFundsRaised();
   console.log(`Current funds raised is: ${response}`);
 
-  const contributionAmount = ethers.parseEther("0.1");
+  const provider = getProvider();
+  let balanceBeforeTransaction = await provider.getBalance(getWallet().address);
+  console.log(`Wallet balance before contribution: ${ethers.formatEther(balanceBeforeTransaction)} ETH`);
 
-  const paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+  const contributionAmount = ethers.parseEther("0.01");
+  // Get paymaster params
+  const paymasterParams = utils.getPaymasterParams(PAYMASTER_ADDRESS, {
     type: "General",
     innerInput: new Uint8Array(),
   });
 
-  const gasprice = await provider.getGasPrice();
+  const gasLimit = await contract.contribute.estimateGas({
+    value: contributionAmount,
+    customData: {
+      gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
+      paymasterParams: paymasterParams,
+    },
+  });
+
   const transaction = await contract.contribute({
     value: contributionAmount,
     maxPriorityFeePerGas: 0n,
     maxFeePerGas: await provider.getGasPrice(),
-    // hardhcoded for testing
-    gasLimit: 800000n,
+    gasLimit,
+    // Pass the paymaster params as custom data
     customData: {
-      gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT + 50000,
+      gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
       paymasterParams,
     },
   });
-
-
   console.log(`Transaction hash of setting new message: ${transaction.hash}`);
 
-  // Wait until transaction is processed
   await transaction.wait();
-
-  // Read message after transaction
-  console.log(`The amount raised now is: ${await contract.getTotalFundsRaised()}`);
+  
+  let balanceAfterTransaction = await provider.getBalance(getWallet().address);
+  // Check the wallet balance after the transaction
+  // We only pay the contribution amount, so the balance should be less than before
+  // Gas fees are covered by the paymaster
+  console.log(`Wallet balance after contribution: ${ethers.formatEther(balanceAfterTransaction)} ETH`);
+  
+  console.log(
+    `The amount raised now is: ${await contract.getTotalFundsRaised()}`
+  );
 }
