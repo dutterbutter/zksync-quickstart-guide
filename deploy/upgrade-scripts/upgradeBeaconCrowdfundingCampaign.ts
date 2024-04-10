@@ -1,5 +1,5 @@
 import { getWallet } from "../utils";
-import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
+import { Deployer } from '@matterlabs/hardhat-zksync';
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import * as zk from 'zksync-ethers';
 import { Contract } from 'ethers';
