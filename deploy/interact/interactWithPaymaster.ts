@@ -1,11 +1,11 @@
 import * as hre from "hardhat";
-import { getWallet, getProvider } from "./utils";
+import { getWallet, getProvider } from "../utils";
 import { ethers } from "ethers";
 import { utils } from "zksync-ethers";
 
 // Address of the contract to interact with
-const CONTRACT_ADDRESS = "0xf811EA0B13DB10cBDDb32BB311000C69DbFE2Cb1";
-const PAYMASTER_ADDRESS = "0xB78284304181Ab44d5F73C6CC4881868044F7CC5";
+const CONTRACT_ADDRESS = "YOUR-CONTRACT-ADDRESS";
+const PAYMASTER_ADDRESS = "YOUR-PAYMASTER-ADDRESS";
 if (!CONTRACT_ADDRESS || !PAYMASTER_ADDRESS)
     throw new Error("Contract and Paymaster addresses are required.");
 
@@ -23,9 +23,6 @@ export default async function() {
     contractArtifact.abi,
     getWallet()
   );
-
-  const response = await contract.getTotalFundsRaised();
-  console.log(`Current funds raised is: ${response}`);
 
   const provider = getProvider();
   let balanceBeforeTransaction = await provider.getBalance(getWallet().address);
@@ -57,7 +54,7 @@ export default async function() {
       paymasterParams,
     },
   });
-  console.log(`Transaction hash of setting new message: ${transaction.hash}`);
+  console.log(`Transaction hash: ${transaction.hash}`);
 
   await transaction.wait();
   
@@ -66,8 +63,4 @@ export default async function() {
   // We only pay the contribution amount, so the balance should be less than before
   // Gas fees are covered by the paymaster
   console.log(`Wallet balance after contribution: ${ethers.formatEther(balanceAfterTransaction)} ETH`);
-  
-  console.log(
-    `The amount raised now is: ${await contract.getTotalFundsRaised()}`
-  );
 }
